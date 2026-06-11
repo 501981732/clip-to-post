@@ -1,45 +1,149 @@
 # Clip-to-Post Skill
 
-`clip-to-post` is a reusable AI workflow skill distilled from the ClipSketch AI pipeline. It turns video clips, keyframes, screenshots, or image batches into a structured social-media content package:
+[中文说明](./README.zh-CN.md)
+
+![Skill](https://img.shields.io/badge/Codex%20Skill-Ready-2563eb?style=for-the-badge)
+![Multimodal](https://img.shields.io/badge/Multimodal-Video%20%2B%20Images-10b981?style=for-the-badge)
+![Workflow](https://img.shields.io/badge/Workflow-Human%20in%20the%20Loop-f59e0b?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Production%20Blueprint-111827?style=for-the-badge)
+
+![Clip-to-Post hero](./assets/clip-to-post-hero.png)
+
+**Clip-to-Post** is a reusable AI workflow skill for turning visual material into publish-ready social content: storyboard panels, captions, cover art, and exportable workflow state.
+
+It is not a "one prompt does everything" trick. It distills a more reliable creative pipeline:
 
 ```text
-visual material
-  -> keyframe normalization
+video / images
+  -> keyframes
   -> step analysis
-  -> storyboard generation
-  -> character/watermark integration
-  -> panel refinement
-  -> caption generation
-  -> cover generation
-  -> exportable workflow state
+  -> base storyboard
+  -> character + watermark integration
+  -> refined panels
+  -> social captions
+  -> cover art
+  -> export package
 ```
 
-The skill is designed for human-in-the-loop multimodal content production, not for a single giant prompt. Each pipeline node owns one task and produces inspectable intermediate artifacts.
+## Why It Matters
 
-## Structure
+Most AI content tools collapse everything into one giant model call. That is hard to debug, hard to steer, and hard to productize.
+
+Clip-to-Post treats content generation like a small production line:
+
+- **Understand before generating**: analyze keyframes into semantic steps first.
+- **Draft before polishing**: generate the whole storyboard, then refine panels one by one.
+- **Write from final visuals**: generate captions after the images exist.
+- **Design for platforms**: use strategy prompts for Xiaohongshu, Instagram, SOP docs, and custom channels.
+- **Keep humans in the loop**: allow editing steps, locking panels, selecting captions, and rerunning only stale nodes.
+
+## Best For
+
+- AI content factories
+- Short-video repurposing tools
+- Multimodal workflow demos
+- Agent / Skill marketplaces
+- Storyboard generation
+- Xiaohongshu and Instagram post generation
+- Product tutorials and internal SOP visual guides
+
+## What Is Inside
 
 ```text
 .
 ├── SKILL.md
+├── README.md
+├── README.zh-CN.md
+├── assets/
+│   └── clip-to-post-hero.png
 └── references/
     ├── pipeline-blueprint.md
     ├── prompt-templates.md
     └── schemas.md
 ```
 
-## Use Cases
+### `SKILL.md`
 
-- Build a "video/images to social post" content workflow.
-- Productize a multimodal AI content factory.
-- Create a Workshop or workflow-engine demo with visible state transitions.
-- Reuse ClipSketch-style prompts, state contracts, and platform strategies.
+The main skill entrypoint. It defines when to use the skill and how to execute the segmented multimodal workflow.
 
-## Packaging
+### `references/pipeline-blueprint.md`
 
-From the parent directory, run the skill packager:
+The ClipSketch-inspired pipeline architecture: node responsibilities, provider abstraction, state persistence, export behavior, and failure handling.
 
-```bash
-python3 /path/to/skill-creator/scripts/package_skill.py clip-to-post ./dist
+### `references/prompt-templates.md`
+
+Reusable prompt templates for step analysis, storyboard generation, character integration, panel refinement, caption generation, and cover generation.
+
+### `references/schemas.md`
+
+TypeScript-style contracts for input, frame data, step analysis, artifacts, pipeline state, provider interfaces, and export payloads.
+
+## Pipeline
+
+```mermaid
+flowchart LR
+  A["Video / Image Batch"] --> B["Keyframe Capture"]
+  B --> C["Step Analysis"]
+  C --> D["Base Storyboard"]
+  D --> E["Character / Watermark"]
+  E --> F["Panel Refinement"]
+  F --> G["Caption Generation"]
+  G --> H["Caption Selection"]
+  H --> I["Cover Generation"]
+  I --> J["Export Package"]
 ```
 
-The package should contain `clip-to-post/SKILL.md` and the `references/` files.
+## Quick Start
+
+Clone the repository:
+
+```bash
+git clone https://github.com/501981732/clip-to-post.git
+cd clip-to-post
+```
+
+Use the skill folder directly in a Codex/Claude-compatible skill environment, or package it from a clean checkout.
+
+Validate and package with the skill creator tooling:
+
+```bash
+python3 /path/to/skill-creator/scripts/package_skill.py /path/to/clip-to-post ./dist
+```
+
+## Example Trigger Prompts
+
+```text
+Use clip-to-post to turn these cooking video frames into a Xiaohongshu post package.
+```
+
+```text
+Design an AI workflow that converts product tutorial screenshots into storyboard panels, captions, and cover art.
+```
+
+```text
+Repurpose this travel video into Instagram carousel panels with three caption options.
+```
+
+```text
+Use this as an internal SOP generator: analyze screenshots, produce visual steps, and export an implementation-ready state schema.
+```
+
+## Design Principles
+
+- **Small AI nodes beat giant prompts.**
+- **Intermediate artifacts should be visible, editable, and persisted.**
+- **Platform strategy belongs in a strategy layer, not scattered across prompts.**
+- **Generated images and captions should share the same source truth.**
+- **Reruns should invalidate only downstream artifacts.**
+
+## Roadmap Ideas
+
+- Add more platform strategies: Douyin, WeChat, TikTok, YouTube Shorts.
+- Add domain strategies: baby memory, food recipe, fitness movement, auto review, product tutorial, travel log, internal SOP.
+- Add a sample workflow runner.
+- Add exported demo packages.
+- Add cost and model-routing reference docs.
+
+## Keywords
+
+`ai-skill` `multimodal-ai` `agent-workflow` `video-to-post` `storyboard-generation` `content-repurposing` `prompt-engineering` `human-in-the-loop` `xiaohongshu` `instagram`
