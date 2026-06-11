@@ -57,11 +57,24 @@ Clip-to-Post 把内容生成拆成一条小型生产线：
 ├── README.zh-CN.md
 ├── assets/
 │   └── clip-to-post-hero.png
+├── scripts/
+│   └── extract_frames.py
 └── references/
     ├── pipeline-blueprint.md
     ├── prompt-templates.md
     └── schemas.md
 ```
+
+## 截帧能力边界
+
+这个仓库现在补了一个**本地视频截帧脚本**，但它仍然不是万能网页视频播放器。
+
+| 素材来源 | 当前仓库是否支持 | 说明 |
+| --- | --- | --- |
+| 本地 `.mp4`、`.mov`、`.mkv` 文件 | 支持，通过 `scripts/extract_frames.py` | 需要安装 `ffmpeg` 和 `ffprobe` |
+| 已排序图片批量 / 截图 | 支持 | 可以直接作为 `FrameData[]` 输入 |
+| 宿主 App 里已经能播放的视频 | 只提供契约 | 宿主应用需要用 `<video>` + `canvas.drawImage()` 实现 |
+| B 站、Instagram、登录态页面、过期 URL、DRM/CORS 媒体 | 不直接支持 | 需要宿主浏览器/后端抽帧、代理、权限或平台专用工具 |
 
 ### `SKILL.md`
 
@@ -105,11 +118,32 @@ cd clip-to-post
 
 可以直接把这个目录作为 Codex / Claude 兼容的 Skill 使用，也可以从干净 checkout 打包。
 
-使用 skill creator 工具校验并打包：
+使用 skill creator 工具校验：
 
 ```bash
-python3 /path/to/skill-creator/scripts/package_skill.py /path/to/clip-to-post ./dist
+python3 /path/to/skill-creator/scripts/quick_validate.py /path/to/clip-to-post
 ```
+
+从 git checkout 生成干净的可分发 zip：
+
+```bash
+mkdir -p dist
+git archive --format=zip --prefix=clip-to-post/ HEAD -o dist/clip-to-post.zip
+```
+
+抽取本地视频关键帧：
+
+```bash
+python3 scripts/extract_frames.py ./demo.mp4 --timestamps 0,2.5,5 --out ./frames --include-base64
+```
+
+或者按固定间隔抽帧：
+
+```bash
+python3 scripts/extract_frames.py ./demo.mp4 --every-seconds 2 --max-frames 8 --out ./frames
+```
+
+脚本会输出 JPEG 图片和 `manifest.json`。后续 Pipeline 可以把 manifest 里的 frames 作为视觉输入。
 
 ## 示例触发词
 
@@ -144,6 +178,7 @@ python3 /path/to/skill-creator/scripts/package_skill.py /path/to/clip-to-post ./
 - 增加示例 Workflow Runner。
 - 增加 demo 发布包。
 - 增加成本统计和模型路由参考文档。
+- 增加面向宿主 App 的浏览器截帧适配器。
 
 ## 关键词
 

@@ -48,6 +48,30 @@ interface FrameData {
   data: string;
 }
 
+interface ExtractedFrameFile {
+  tagId: string;
+  timestamp: number;
+  file: string;
+  path: string;
+  data?: string;
+}
+
+interface FrameExtractionManifest {
+  sourceType: 'video';
+  source: string;
+  duration: number;
+  frameCount: number;
+  frames: ExtractedFrameFile[];
+}
+
+interface FrameExtractionCapability {
+  kind: 'local_ffmpeg' | 'browser_canvas' | 'backend_media_service';
+  supportsLocalFiles: boolean;
+  supportsWebPlayback: boolean;
+  supportsBase64Output: boolean;
+  notes?: string;
+}
+
 interface Step {
   id: string;
   indices: number[];

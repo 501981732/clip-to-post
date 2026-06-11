@@ -7,7 +7,7 @@ description: This skill should be used when turning video clips, keyframes, scre
 
 ## Overview
 
-Transform raw visual material into a reusable multimodal content workflow: analyze keyframes, plan steps, generate a storyboard, optionally integrate a character or watermark, refine panels, write captions, create a cover, and package the result.
+Transform raw visual material into a reusable multimodal content workflow: extract or accept keyframes, analyze steps, plan a storyboard, optionally integrate a character or watermark, refine panels, write captions, create a cover, and package the result.
 
 Prefer this skill for productizing a "video/images to post" pipeline, designing an AI workflow demo, or implementing a human-in-the-loop content factory. Keep the core rule: understand first, generate second; generate the whole storyboard first, refine panels later; write copy from final visuals, then make the cover.
 
@@ -15,7 +15,9 @@ Prefer this skill for productizing a "video/images to post" pipeline, designing 
 
 1. Normalize input material.
    - Accept a video URL/file, a set of screenshots, or an ordered image batch.
-   - Convert selected video timestamps into base64 image frames with a browser canvas or an equivalent media tool.
+   - For local video files, run `scripts/extract_frames.py` when ffmpeg is available and deterministic local frame extraction is needed.
+   - For web video playback, logged-in pages, expiring URLs, or CORS-protected media, require the host application to provide browser/backend frame extraction. This skill describes the contract but does not bypass website access controls.
+   - Convert selected video timestamps into image frames and optional base64 data URLs with a browser canvas, backend media tool, or bundled local ffmpeg helper.
    - Preserve `tagId`, `timestamp`, original order, source metadata, and target aspect ratio.
 
 2. Analyze steps before generating art.
@@ -61,6 +63,7 @@ Prefer this skill for productizing a "video/images to post" pipeline, designing 
 ## Decision Rules
 
 - Use keyframes instead of sending complete videos to models unless the available model/tool explicitly supports long-video understanding at acceptable cost.
+- Do not claim this skill can play arbitrary web videos by itself. Use `scripts/extract_frames.py` only for local video files; use a host-provided browser or backend extractor for remote/video-page sources.
 - Keep every AI node narrow: one node for analysis, one for base storyboard, one for character integration, one for panel refinement, one for captions, one for cover.
 - Preserve human edits to steps, prompts, captions, and selected frames across reruns.
 - Rerun only the invalidated downstream nodes after a user edits an upstream artifact.
@@ -87,6 +90,16 @@ Expose the pipeline as editable nodes rather than one monolithic generation butt
 - Allow regenerating a single panel without rerunning the full workflow.
 - Allow locking approved panels, captions, and cover art.
 - Show provider/model, cost, status, and error per node when available.
+
+## Local Frame Extraction Helper
+
+Use `scripts/extract_frames.py` when the input is a local video file and `ffmpeg`/`ffprobe` are installed:
+
+```bash
+python3 scripts/extract_frames.py ./demo.mp4 --timestamps 0,2.5,5 --out ./frames --include-base64
+```
+
+The script writes JPEG frames and `manifest.json`. Load `manifest.json` as `FrameData[]` input for the rest of the workflow. For web videos, continue to use a host-provided browser/canvas or backend extraction tool.
 
 ## References
 

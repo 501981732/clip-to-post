@@ -40,11 +40,39 @@ Purpose: convert user-selected timestamps or imported images into an ordered `Fr
 
 Implementation notes:
 
+- Treat frame extraction as a host capability with three possible implementations:
+  - Local file: use `scripts/extract_frames.py`, which wraps `ffmpeg` and writes JPEGs plus `manifest.json`.
+  - Browser app: use a real `<video>` element and `canvas.drawImage()` after seeking to selected timestamps.
+  - Backend media service: upload or fetch media server-side and return frame URLs/base64 data.
+- Do not expect the skill to play arbitrary web videos by itself. Logged-in pages, expiring media URLs, DRM, CORS, and platform-specific player behavior require host application support.
 - Sort video tags by timestamp before capture.
 - Draw the loaded media into a canvas and export JPEG at about `0.85` quality.
 - Store `tagId`, `timestamp`, and `data`.
 - For cross-origin direct media, route through a trusted proxy or fetch service before canvas export.
 - For image-batch mode, preserve user order and synthesize tags when needed.
+
+Local script example:
+
+```bash
+python3 scripts/extract_frames.py ./input.mp4 --timestamps 0,1.5,3 --out ./frames --include-base64
+```
+
+Interval sampling example:
+
+```bash
+python3 scripts/extract_frames.py ./input.mp4 --every-seconds 2 --max-frames 8 --out ./frames
+```
+
+Script output:
+
+```json
+{
+  "manifest": "/absolute/path/frames/manifest.json",
+  "frameCount": 3
+}
+```
+
+`manifest.json` contains ordered frame metadata and optional data URLs when `--include-base64` is set.
 
 ### AnalyzeStepsNode
 

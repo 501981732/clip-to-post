@@ -56,11 +56,24 @@ Clip-to-Post treats content generation like a small production line:
 ├── README.zh-CN.md
 ├── assets/
 │   └── clip-to-post-hero.png
+├── scripts/
+│   └── extract_frames.py
 └── references/
     ├── pipeline-blueprint.md
     ├── prompt-templates.md
     └── schemas.md
 ```
+
+## Frame Extraction Reality Check
+
+This skill now includes a **local video frame extraction helper**, but it still does not magically play every video on the internet.
+
+| Source | Supported by this repo | Notes |
+| --- | --- | --- |
+| Local `.mp4`, `.mov`, `.mkv` files | Yes, via `scripts/extract_frames.py` | Requires `ffmpeg` and `ffprobe` |
+| Ordered image batches / screenshots | Yes | Use images directly as `FrameData[]` |
+| Browser video already loaded in a host app | Contract only | Host app should use `<video>` + `canvas.drawImage()` |
+| Bilibili, Instagram, logged-in pages, expiring URLs, DRM/CORS media | Not directly | Requires host browser/backend extraction, proxy, permissions, or platform-specific tooling |
 
 ### `SKILL.md`
 
@@ -104,11 +117,32 @@ cd clip-to-post
 
 Use the skill folder directly in a Codex/Claude-compatible skill environment, or package it from a clean checkout.
 
-Validate and package with the skill creator tooling:
+Validate with the skill creator tooling:
 
 ```bash
-python3 /path/to/skill-creator/scripts/package_skill.py /path/to/clip-to-post ./dist
+python3 /path/to/skill-creator/scripts/quick_validate.py /path/to/clip-to-post
 ```
+
+Create a clean distributable zip from the git checkout:
+
+```bash
+mkdir -p dist
+git archive --format=zip --prefix=clip-to-post/ HEAD -o dist/clip-to-post.zip
+```
+
+Extract local video frames:
+
+```bash
+python3 scripts/extract_frames.py ./demo.mp4 --timestamps 0,2.5,5 --out ./frames --include-base64
+```
+
+Or sample at intervals:
+
+```bash
+python3 scripts/extract_frames.py ./demo.mp4 --every-seconds 2 --max-frames 8 --out ./frames
+```
+
+The script writes JPEG frames and `manifest.json`. Use the manifest frames as the visual input for the rest of the pipeline.
 
 ## Example Trigger Prompts
 
@@ -143,6 +177,7 @@ Use this as an internal SOP generator: analyze screenshots, produce visual steps
 - Add a sample workflow runner.
 - Add exported demo packages.
 - Add cost and model-routing reference docs.
+- Add browser extraction adapters for host apps that can legally access remote video playback.
 
 ## Keywords
 
